@@ -1,0 +1,188 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>ULTRA CHAMBA - visto bueno</title>
+
+<!--
+  La pantalla de "solo dar el visto bueno", pensada para el telefono.
+
+  POR QUE ES OTRA PAGINA Y NO UNA PESTANA DEL PANEL. El panel sirve para
+  explorar: filtros, facetas, tres mil vacantes. Eso en un movil, con dos
+  minutos y una mano, no se usa -- y lo que no se usa no aprueba nada. Aqui
+  solo hay lo que espera un si o un no, en tarjetas grandes, con dos botones.
+  Cuando haya tiempo y teclado, se abre el panel; el resto del tiempo
+  abre esto.
+
+  Sin build y sin CDN, como el resto del proyecto: un archivo que el servidor
+  entrega tal cual. Si el dia de manana no arranca Python, este archivo sigue
+  siendo legible.
+-->
+
+<style>
+  :root{
+    --fondo:#0f1115; --tarjeta:#181c24; --borde:#252b36;
+    --texto:#e8ecf2; --suave:#98a2b3; --si:#2f9e5e; --no:#8a3b3b;
+    --aviso:#c8922a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--texto);
+       font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:12px 12px 96px;-webkit-text-size-adjust:100%}
+  h1{font-size:17px;margin:4px 0 2px;letter-spacing:.2px}
+  .sub{color:var(--suave);font-size:13px;margin-bottom:14px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;
+     color:var(--suave);margin:22px 0 8px;font-weight:600}
+  .t{background:var(--tarjeta);border:1px solid var(--borde);border-radius:14px;
+     padding:14px;margin-bottom:10px}
+  .emp{font-weight:600;font-size:16px}
+  .pue{color:var(--suave);font-size:14px;margin-top:2px}
+  .via{display:inline-block;font-size:11px;color:var(--suave);
+       border:1px solid var(--borde);border-radius:99px;padding:1px 8px;margin-top:8px}
+  .bot{display:flex;gap:8px;margin-top:12px}
+  button{flex:1;border:0;border-radius:10px;padding:13px;font-size:15px;
+         font-weight:600;color:#fff;font-family:inherit}
+  button:disabled{opacity:.45}
+  .si{background:var(--si)} .no{background:var(--no)}
+  .ver{background:#2a3140;flex:0 0 auto;padding:13px 14px}
+  .cuerpo{display:none;white-space:pre-wrap;font-size:13px;color:var(--suave);
+          margin-top:10px;border-top:1px solid var(--borde);padding-top:10px;
+          max-height:45vh;overflow:auto}
+  .nov{border-left:3px solid var(--aviso)}
+  .cierra{border-left:3px solid #b4443a}
+  .est{color:var(--suave);font-size:13px}
+  .vacio{color:var(--suave);font-size:14px;padding:6px 2px}
+  .pie{position:fixed;left:0;right:0;bottom:0;background:#0f1115ee;
+       border-top:1px solid var(--borde);padding:10px 12px;
+       display:flex;gap:8px;align-items:center;font-size:12px;color:var(--suave);
+       backdrop-filter:blur(6px)}
+  .pie button{flex:0 0 auto;background:#2a3140;padding:9px 12px;font-size:13px}
+  .ok{color:var(--si)} .mal{color:#e07a6a}
+</style>
+
+<h1>ULTRA CHAMBA</h1>
+<div class="sub" id="cabecera">cargando...</div>
+<div id="cuerpo"></div>
+
+<div class="pie">
+  <span id="pie">-</span>
+  <button onclick="cargar()">Actualizar</button>
+</div>
+
+<script>
+// El token viaja en la URL (?t=...) y se guarda, para no tener que pegarlo
+// cada vez desde el movil. Solo se usa contra este servidor.
+const T = new URLSearchParams(location.search).get("t")
+        || localStorage.getItem("uc_token") || "";
+if (T) localStorage.setItem("uc_token", T);
+const q = (r) => r + (r.includes("?") ? "&" : "?") + "t=" + encodeURIComponent(T);
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+async function cargar(){
+  const pie = document.getElementById("pie");
+  pie.textContent = "consultando...";
+  try{
+    const r = await fetch(q("/api/movil"));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    pintar(await r.json());
+    pie.textContent = "al dia - " + new Date().toLocaleTimeString();
+  }catch(e){
+    pie.innerHTML = '<span class="mal">sin conexion con la maquina de casa</span>';
+  }
+}
+
+function pintar(d){
+  document.getElementById("cabecera").textContent =
+    `${d.enviadas} candidaturas enviadas · ${d.en_juego} vacantes en juego`;
+
+  const p = [];
+
+  if (d.cierres?.length){
+    p.push("<h2>Se cierra pronto</h2>");
+    for (const c of d.cierres)
+      p.push(`<div class="t cierra"><div class="emp">${esc(c.nombre)}</div>
+        <div class="pue">cierra ${esc(c.cierra)} - en ${c.dias} dias</div></div>`);
+  }
+
+  if (d.novedades?.length){
+    p.push("<h2>Novedades del correo</h2>");
+    for (const n of d.novedades)
+      p.push(`<div class="t nov"><div class="emp">${esc(n.titulo)}</div>
+        <div class="pue">${esc((n.resumen_novedad||"").slice(0,180))}</div>
+        <div class="bot"><button class="ver" onclick="leido('${n.id}',this)">Visto</button></div></div>`);
+  }
+
+  p.push("<h2>Esperan tu visto bueno</h2>");
+  if (!d.pendientes?.length) p.push('<div class="vacio">Nada pendiente. Todo lo que habia, salio.</div>');
+  for (const c of d.pendientes){
+    p.push(`<div class="t" id="c_${c.id}">
+      <div class="emp">${esc(c.empresa || "(sin empresa)")}</div>
+      <div class="pue">${esc(c.puesto)}</div>
+      <div class="via">${esc(c.via)}${c.donde ? " · " + esc(c.donde) + (c.donde_comprobada ? "" : " (sin comprobar)") : ""}${c.borrador_gmail ? " · borrador listo" : ""}</div>
+      <div class="bot">
+        <button class="si" onclick="decidir('${c.id}',true,this)">Aprobar</button>
+        <button class="no" onclick="decidir('${c.id}',false,this)">No</button>
+        <button class="ver" onclick="ver('${c.id}')">Ver</button>
+      </div>
+      <div class="cuerpo" id="v_${c.id}">${esc(c.asunto)}\n\n${esc(c.cuerpo)}</div>
+    </div>`);
+  }
+
+  if (d.aprobadas_sin_ejecutar?.length){
+    p.push(`<h2>Aprobadas, saliendo</h2><div class="t"><div class="est">
+      ${d.aprobadas_sin_ejecutar.length} en cola.
+      ${d.agente?.vivo ? "El agente de casa paso hace " + d.agente.hace_min + " min."
+        : '<span class="mal">El agente de casa NO esta corriendo: no saldran hasta que lo arranques.</span>'}
+      </div></div>`);
+  }
+
+  if (d.procesos?.length){
+    p.push("<h2>Procesos vivos</h2>");
+    for (const x of d.procesos)
+      p.push(`<div class="t"><div class="emp">${esc(x.empresa || x.puesto)}</div>
+        <div class="pue">${esc(x.estado)}${x.pendiente ? " - " + esc(x.pendiente) : ""}</div></div>`);
+  }
+
+  document.getElementById("cuerpo").innerHTML = p.join("");
+}
+
+function ver(id){
+  const e = document.getElementById("v_" + id);
+  e.style.display = e.style.display === "block" ? "none" : "block";
+}
+
+async function decidir(id, si, boton){
+  // Los dos botones de la tarjeta se apagan al instante: en el movil, un
+  // toque que no responde se repite, y un si repetido son dos correos.
+  const tarjeta = document.getElementById("c_" + id);
+  tarjeta.querySelectorAll("button").forEach(b => b.disabled = true);
+  let motivo = "";
+  if (!si){
+    motivo = prompt("¿Por que no? (esto ensena al filtro)") || "descartada desde el movil";
+  }
+  try{
+    const r = await fetch(q(si ? "/api/aprobar" : "/api/rechazar"), {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({id, motivo})});
+    const j = await r.json();
+    tarjeta.innerHTML = `<div class="est">${si ? "Aprobada. " + esc(j.siguiente || "")
+                                              : "Descartada: " + esc(motivo)}</div>`;
+  }catch(e){
+    tarjeta.querySelectorAll("button").forEach(b => b.disabled = false);
+    alert("No se pudo guardar: " + e.message);
+  }
+}
+
+async function leido(id, boton){
+  boton.disabled = true;
+  await fetch(q("/api/tramite-leido"), {method:"POST",
+    headers:{"Content-Type":"application/json"}, body: JSON.stringify({id})});
+  boton.textContent = "ok";
+}
+
+cargar();
+// Se refresca solo cada dos minutos: lo justo para ver salir lo aprobado sin
+// castigar la bateria del telefono.
+setInterval(cargar, 120000);
+</script>

@@ -1,0 +1,41 @@
+# Entorno y cachés de Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Configuración local y secretos: nunca al repositorio
+.env
+.env.*
+!.env.example
+token*.json
+credenciales*.json
+client_secret*.json
+permitir_envio.json
+
+# Todo lo que el sistema genera o descarga (base de datos, registros, cachés,
+# tokens de Google, corpus). Vive en app/datos/ y es de cada persona.
+app/datos/
+*.db
+*.db-journal
+*.sqlite
+*.log
+
+# Derivados que se regeneran desde la base
+dashboard.html
+vacantes.json
+estadisticas.json
+corpus-notebooklm/
+
+# Documentos personales (CV, cartas) y recursos que no se distribuyen
+*.pdf
+*.docx
+assets/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

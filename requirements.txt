@@ -1,0 +1,7 @@
+# Dependencias necesarias. Son las versiones con las que se probó esta copia
+# (Python 3.12.3 en Windows 11). Sus dependencias indirectas se instalan solas.
+requests==2.34.2
+urllib3==2.7.0
+httpx==0.28.1
+beautifulsoup4==4.15.0
+lxml==6.1.3

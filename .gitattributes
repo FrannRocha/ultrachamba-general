@@ -1,0 +1,4 @@
+# El repositorio guarda los archivos de texto con finales de línea LF, sea cual
+# sea la configuración de Git de quien contribuya. En la carpeta de trabajo
+# cada archivo conserva el final de línea que ya tenía.
+* text=auto

@@ -1,0 +1,5 @@
+# Opcional: solo para Gmail (borradores, seguimiento de respuestas, trámites) y
+# Google Drive. Sin estas librerías el resto del sistema funciona.
+google-auth==2.58.0
+google-auth-oauthlib==1.4.1
+google-api-python-client==2.200.0

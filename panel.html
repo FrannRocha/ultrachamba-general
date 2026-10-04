@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ULTRA CHAMBA — Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Mulish:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ---------------------------------------------------------------------------
+   Paleta del sistema de origen. Lenguaje visual tomado de copula.agency:
+   hero a pantalla completa con tipografia display enorme apilada, formas
+   geometricas de acento, barra superior con hairline, pestaña lateral, y
+   CERO sombras — la profundidad la da el color, nunca el relieve.
+--------------------------------------------------------------------------- */
+:root{
+  --fondo:#F8F7FC; --tarjeta:#FFFFFF; --tarjeta-alt:#F3F0FA;
+  --morado:#6D28D9; --morado-2:#8B5CF6; --morado-suave:#DDD6FE; --morado-oscuro:#3B0764;
+  --txt:#1F2937; --txt2:#6B7280; --borde:#E5E1F2;
+  --exito:#10B981; --alerta:#F59E0B; --error:#EF4444; --info:#6366F1;
+  --display:"Bebas Neue","Oswald","Arial Narrow",sans-serif;
+  --texto:"Mulish","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--fondo);color:var(--txt);font:15px/1.6 var(--texto)}
+a{color:var(--morado);text-decoration:none} a:hover{text-decoration:underline}
+.wrap{max-width:1360px;margin:0 auto;padding:0 26px}
+
+/* --- Fondo del area de contenido ---------------------------------------
+   La imagen va fija detras de todo, atenuada por una capa translucida para
+   que el texto siga siendo legible: las tarjetas son casi opacas encima.
+   Para quitarla, basta con poner --fondo-img:none aqui abajo.            */
+/* La imagen va en el propio `body`, en capas, no en pseudo-elementos con
+   z-index negativo: el fondo opaco del body los tapaba por completo.
+   Orden de capas: velo translucido > imagen fija > color solido de respaldo.
+   Para quitar la imagen, cambia --fondo-img a `none`.
+   Para que se vea mas o menos, sube o baja el 0.80 del velo.
+   Esta version no trae imagen: la del sistema de origen no se distribuye.
+   Para usar una tuya, guardala como assets/fondo.webp y pon aqui
+   --fondo-img:url("/assets/fondo.webp").                                   */
+:root{
+  --fondo-img:none;
+  --velo:rgba(248,247,252,.62);
+  /* Transparencia de tarjetas y barra de filtros. Mas bajo = se ve mas el
+     fondo; mas alto = mas legible el texto. */
+  --vidrio:rgba(255,255,255,.62);
+  --vidrio-hover:rgba(255,255,255,.78);
+}
+body{
+  background:
+    linear-gradient(var(--velo), var(--velo)),
+    /* La imagen es vertical (1024x1536): anclada arriba, el encuadre deja a
+       la vista al sujeto en pantallas anchas en vez de recortarlo. */
+    var(--fondo-img) center top/cover no-repeat fixed,
+    var(--fondo);
+}
+.contenido{position:relative}
+
+/* ============================ HERO compacto ============================ */
+.hero{background:var(--morado-oscuro);color:#fff;
+      display:flex;flex-direction:column;position:relative;overflow:hidden}
+.navbar{display:flex;align-items:center;justify-content:space-between;
+        padding:20px 30px;border-bottom:1px solid rgba(221,214,254,.3)}
+.logo{font:700 21px var(--texto);letter-spacing:-.02em;color:#fff}
+.logo span{color:var(--morado-2)}
+.mas{width:44px;height:44px;border-radius:50%;background:var(--morado-suave);
+     color:var(--morado-oscuro);border:none;cursor:pointer;font-size:24px;line-height:1;
+     display:flex;align-items:center;justify-content:center;transition:.15s}
+.mas:hover{background:#fff;transform:rotate(90deg)}
+.hero-micro{padding:22px 30px 0;font:700 13.5px var(--texto);color:var(--morado-suave);
+            max-width:420px;line-height:1.4}
+.hero-cuerpo{display:flex;align-items:flex-end;padding:10px 30px 26px;position:relative}
+/* Medida compacta: el titulo manda pero el hero no ocupa toda la pantalla. */
+.hero-titulo{font-family:var(--display);font-size:clamp(46px,8.4vw,104px);line-height:.86;
+             letter-spacing:.01em;text-transform:uppercase;color:#F4EFE9;margin:0}
+.hero-fila{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap}
+
+/* Formas de acento: el asterisco y el blob del sitio de referencia */
+.asterisco{width:92px;height:92px;flex-shrink:0;fill:var(--morado-2);animation:girar 22s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+.blob{width:118px;height:118px;flex-shrink:0;position:relative;display:flex;
+      align-items:center;justify-content:center;text-align:center}
+.blob svg{position:absolute;inset:0;width:100%;height:100%;fill:var(--morado-2)}
+.blob-txt{position:relative;font-family:var(--display);color:#fff;line-height:.88}
+.blob-txt .n{font-size:34px;display:block}
+.blob-txt .l{font:800 10px var(--texto);letter-spacing:.1em;text-transform:uppercase}
+.punto{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--morado-suave);
+       right:16%;top:34%;animation:flotar 5s ease-in-out infinite}
+@keyframes flotar{50%{transform:translateY(-22px)}}
+.pestana{position:fixed;right:0;top:38%;background:var(--morado-oscuro);color:#fff;
+         padding:18px 11px;writing-mode:vertical-rl;font:800 11px var(--texto);
+         letter-spacing:.16em;text-transform:uppercase;z-index:40;border-radius:10px 0 0 10px;
+         cursor:pointer;border:1px solid rgba(221,214,254,.3);border-right:none}
+.pestana:hover{background:var(--morado)}
+
+/* Cifras: sin cajas, separadas por lineas finas */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+       border-top:1px solid rgba(221,214,254,.3)}
+.stat{padding:16px 20px 17px;border-right:1px solid rgba(221,214,254,.3);cursor:pointer;transition:.14s}
+.stat:last-child{border-right:none}
+.stat:hover{background:rgba(139,92,246,.22)}
+.stat .n{font-family:var(--display);font-size:40px;line-height:.9;color:#fff}
+.stat .l{font-size:10px;color:var(--morado-suave);text-transform:uppercase;
+         letter-spacing:.11em;margin-top:6px;font-weight:800}
+
+/* ============================== CONTENIDO ============================== */
+.seccion{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;
+         letter-spacing:.14em;text-transform:uppercase;color:var(--morado-oscuro);margin:34px 0 14px}
+.seccion:before{content:"✳";color:var(--morado-2);font-size:15px}
+/* Tarjetas y barra semitransparentes: dejan ver el fondo, y el desenfoque
+   por detras mantiene el texto legible aunque la imagen tenga contraste. */
+.barra{background:rgba(255,255,255,.55);border:1px solid var(--borde);
+       border-radius:18px;padding:18px 20px}
+.fila{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fila+.fila{margin-top:11px}
+input[type=search]{flex:1;min-width:240px;background:var(--tarjeta-alt);border:1px solid var(--borde);
+  color:var(--txt);padding:11px 15px;border-radius:999px;font:15px var(--texto)}
+input[type=search]:focus{outline:none;border-color:var(--morado-2);background:#fff}
+.et{font-size:10.5px;color:var(--txt2);text-transform:uppercase;letter-spacing:.12em;
+    margin-right:4px;font-weight:800;min-width:76px}
+button.f{background:var(--tarjeta-alt);border:1px solid var(--borde);color:var(--txt2);
+  padding:7px 14px;border-radius:999px;cursor:pointer;font:600 12.5px var(--texto);transition:.13s}
+button.f:hover{border-color:var(--morado-2);color:var(--morado);background:#fff}
+button.f.on{background:var(--morado);border-color:var(--morado);color:#fff}
+select{background:var(--tarjeta-alt);border:1px solid var(--borde);color:var(--txt);
+  padding:10px 13px;border-radius:999px;font:600 13px var(--texto);cursor:pointer}
+.conteo{color:var(--txt2);font-size:13.5px;margin:14px 0 14px 4px}
+.conteo b{color:var(--morado-oscuro);font-weight:800}
+.tarjeta{background:var(--vidrio);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--borde);border-radius:18px;
+  padding:20px 22px;margin-bottom:12px;transition:.14s}
+.tarjeta:hover{border-color:var(--morado-2);background:var(--vidrio-hover)}
+.tarjeta.aplicado{opacity:.62;background:rgba(243,240,250,.5)}
+.tarjeta.aplicado .tit{text-decoration:line-through}
+.cab{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.tit{font-family:var(--display);font-size:26px;line-height:1.05;color:var(--morado-oscuro);
+     text-transform:uppercase}
+.emp{color:var(--txt2);font-size:13.5px;margin-top:6px}
+.emp b{color:var(--txt);font-weight:700}
+.score{text-align:center;flex-shrink:0;min-width:76px;border-left:1px solid var(--borde);padding-left:18px}
+.score .v{font-family:var(--display);font-size:44px;line-height:.85}
+.score .t{font-size:9.5px;color:var(--txt2);text-transform:uppercase;letter-spacing:.12em;font-weight:800}
+.etiquetas{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.tag{font-size:11px;font-weight:600;padding:4px 11px;border-radius:999px;
+     background:var(--tarjeta-alt);color:var(--txt2);border:1px solid var(--borde);white-space:nowrap}
+.tag.ok{background:rgba(16,185,129,.1);color:#047857;border-color:rgba(16,185,129,.3)}
+.tag.warn{background:rgba(245,158,11,.12);color:#92400E;border-color:rgba(245,158,11,.32)}
+.tag.mal{background:rgba(239,68,68,.1);color:#B91C1C;border-color:rgba(239,68,68,.3)}
+.tag.oro{background:var(--morado);color:#fff;border-color:var(--morado);font-weight:800}
+.tag.vio{background:var(--morado-suave);color:var(--morado-oscuro);border-color:#C9BEF9;font-weight:700}
+.tag.info{background:rgba(99,102,241,.09);color:#4338CA;border-color:rgba(99,102,241,.26)}
+.acc{display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--morado);color:#fff;padding:9px 20px;border-radius:999px;
+     font:700 13px var(--texto);border:1px solid var(--morado);cursor:pointer}
+.btn:hover{background:var(--morado-2);border-color:var(--morado-2);text-decoration:none}
+.btn.marc{background:transparent;color:var(--exito);border-color:rgba(16,185,129,.4)}
+.btn.marc:hover{background:rgba(16,185,129,.08);color:#047857}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--txt2);font-size:12.5px;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:before{content:"▸ ";color:var(--morado-2)}
+details[open] summary:before{content:"▾ "}
+.porque{margin-top:11px;padding:14px 16px;background:rgba(243,240,250,.72);border-radius:12px;
+        border-left:3px solid var(--morado-2);font-size:12.5px;color:var(--txt2)}
+.porque li{margin:4px 0 4px 18px}
+.desc{margin-top:10px;font-size:12.5px;color:var(--txt2);max-height:190px;overflow:auto;
+      padding:14px 16px;background:rgba(243,240,250,.72);border-radius:12px;line-height:1.7}
+.vacio{text-align:center;padding:70px 20px;color:var(--txt2)}
+.vacio b{font-family:var(--display);font-size:30px;color:var(--morado-oscuro);display:block}
+.cargando{text-align:center;padding:50px;color:var(--txt2)}
+.error{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.3);color:#B91C1C;
+       padding:20px 22px;border-radius:16px;margin:20px 0}
+.error code{background:var(--morado-oscuro);color:#fff;padding:3px 8px;border-radius:6px}
+footer{background:var(--morado-oscuro);color:var(--morado-suave);margin-top:50px;padding:34px 0;
+       font-size:12.5px;text-align:center}
+footer code{background:rgba(255,255,255,.12);color:#fff;padding:2px 7px;border-radius:5px}
+/* La barra de filtros NO va pegada al hacer scroll. Una capa pegajosa y
+   semitransparente a la vez es contradictoria: las tarjetas pasan por detras
+   y se ven a traves de ella. Se vuelve a los filtros con el boton + de la
+   cabecera o con la pestaña lateral, que ya hacen scroll hasta aqui. */
+.sticky{padding:10px 0 6px}
+@media(max-width:680px){
+  .cab{flex-direction:column}
+  .score{border-left:none;padding-left:0;text-align:left}
+  .et{min-width:auto}
+  .hero-cuerpo{padding-bottom:34px}
+  .asterisco,.blob{width:88px;height:88px}
+}
+
+/* Formacion gratuita */
+.bloque-cursos{ margin-top:34px; }
+.bloque-cursos .seccion .sub-seccion{
+  font-family:var(--texto); font-size:.74rem; font-weight:400;
+  color:var(--txt2); letter-spacing:0; margin-left:10px; text-transform:none; }
+.tarjeta.curso{ border-left:3px solid var(--info); }
+.porque-corto{ font-size:.88rem; color:var(--txt2); margin:4px 0 10px; }
+
+/* Pestañas: vacantes y formacion son dos trabajos distintos, no una lista */
+.pestanas{display:flex;gap:8px;margin:26px 0 4px;border-bottom:1px solid var(--borde)}
+.pest{background:none;border:none;border-bottom:3px solid transparent;
+      color:var(--txt2);cursor:pointer;padding:12px 20px 11px;
+      font:800 12.5px var(--texto);letter-spacing:.09em;text-transform:uppercase;
+      display:flex;align-items:center;gap:9px;transition:.14s;margin-bottom:-1px}
+.pest:hover{color:var(--morado)}
+.pest.on{color:var(--morado-oscuro);border-bottom-color:var(--morado)}
+.pest .cuenta{background:var(--morado-suave);color:var(--morado-oscuro);
+              border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:800}
+.pest.on .cuenta{background:var(--morado);color:#fff}
+@media(max-width:560px){ .pest{padding:11px 12px;font-size:11px} }
+.intro-cursos{color:var(--txt2);font-size:13.5px;line-height:1.65;
+  margin:0 0 18px;max-width:760px}
+.intro-cursos b{color:var(--morado-oscuro);font-weight:700}
+
+/* Plan de hoy */
+.marcador{background:var(--morado-oscuro);color:#fff;border-radius:18px;
+  padding:20px 24px;margin:18px 0 22px}
+.marcador-num{font-family:var(--display);font-size:20px;letter-spacing:.03em}
+.marcador-num .n{font-size:30px;color:var(--morado-suave)}
+.marcador-sub{font-size:13px;color:var(--morado-suave);margin-top:8px;
+  font-family:var(--texto);max-width:640px;line-height:1.55}
+.tarjeta.plan{border-left:3px solid var(--exito)}
+.tarjeta.accion{border-left:3px solid var(--alerta);background:#FFFBEB}
+.accion-que{font-size:15px;font-weight:700;color:#92400E;margin-bottom:4px}
+.accion-cuando{font-size:12.5px;color:var(--txt2)}
+.tarjeta.plan.fria{border-left-color:var(--alerta)}
+.porque-plan{margin:10px 0 4px 20px;font-size:13.5px;color:var(--txt2)}
+.contacto-linea{font-size:13px;color:var(--txt);margin-top:6px}
+.contacto-linea code{background:var(--tarjeta-alt);padding:2px 7px;border-radius:6px;font-size:12px}
+.correo-caja{background:var(--tarjeta-alt);border:1px solid var(--borde);
+  border-radius:12px;padding:14px 16px;margin:12px 0}
+.correo-asunto{font-size:13.5px;margin-bottom:8px}
+.correo-texto{width:100%;border:1px solid var(--borde);border-radius:8px;
+  padding:10px 12px;font:13px/1.55 var(--texto);color:var(--txt);
+  background:#fff;resize:vertical}
+.aviso-correo{font-size:12.5px;color:#92400E;background:#FEF3C7;
+  border-radius:8px;padding:7px 11px;margin-top:8px}
+.btn.env{background:var(--exito);color:#fff;border:none}
+.btn.desc{background:none;border:1px solid var(--borde);color:var(--txt2)}
+/* Preguntar el porque del rechazo. Aparece solo al descartar, para no
+   ensuciar la tarjeta con siete botones que casi nunca se usan. */
+.motivo-caja{margin-top:12px;padding:12px 14px;border-radius:8px;
+  background:var(--fondo2, #F8FAFC);border:1px solid var(--borde)}
+.motivo-titulo{font-size:12.5px;color:var(--txt2);margin-bottom:10px}
+.motivo-botones{display:flex;flex-wrap:wrap;gap:8px}
+/* El marcador por canal: por que la cola trae esta mezcla. */
+.rendimiento{display:flex;flex-wrap:wrap;gap:26px;margin-top:18px;
+  padding-top:16px;border-top:1px solid rgba(255,255,255,.18)}
+.rend-canal{min-width:150px}
+.rend-tasa{font-size:26px;font-weight:600;line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.rend-nombre{font-size:12.5px;opacity:.9;margin-top:2px}
+.rend-detalle{font-size:11.5px;opacity:.7;margin-top:2px}
+.rend-razon{flex-basis:100%;font-size:11.5px;opacity:.75;margin-top:4px}
+.tarjeta.empresa-mini{padding:16px 20px}
+.listo-gmail{background:#DCFCE7;color:#166534;border-radius:10px;
+  padding:10px 14px;margin-top:10px;font-size:13.5px}
+.listo-gmail a{color:#166534;font-weight:800;text-decoration:underline}
+.listo-gmail.sin-destino{background:#FEF3C7;color:#92400E}
+.listo-gmail.sin-destino a{color:#92400E}
+.btn.pri[disabled],.btn.marc[disabled]{opacity:.55;cursor:default}
+</style>
+</head>
+<body>
+<div id="raiz"><div class="cargando">Cargando…</div></div>
+
+<script src="/vendor/react.production.min.js"></script>
+<script src="/vendor/react-dom.production.min.js"></script>
+<script type="module">
+import htm from '/vendor/htm.module.js';
+const html = htm.bind(React.createElement);
+const {useState, useEffect, useCallback, useRef} = React;
+
+const ETIQ = {
+  veredicto:{'aplicar-ya':'Aplicar ya','buen-fit':'Buen fit','explorar':'Explorar','zona-gris':'Zona gris'},
+  area:{'ciberseguridad':'Ciberseguridad','ia':'Inteligencia Artificial','ciber-ia':'Seguridad de IA','ti-general':'TI general'},
+  nivel:{'practicas':'Prácticas','junior':'Junior','medio':'Medio','excluido':'Fuera de nivel'},
+  modalidad:{'remoto':'Remoto','presencial':'Presencial','hibrido':'Híbrido'},
+  verificacion:{'viva':'Viva','sin-verificar':'Sin verificar','inaccesible':'Inaccesible'}
+};
+const CAMPOS = ['veredicto','area','nivel','modalidad','verificacion'];
+// Configuracion activa (areas y zona base). Llega con /api/facetas en
+// `contexto`; hasta entonces nada se marca como "en tu zona". Con la zona
+// `nacional` no hay zona base, y tampoco se marca.
+let CONTEXTO = null;
+const zonaBase = () => (CONTEXTO && CONTEXTO.zona && CONTEXTO.zona.regex) ? CONTEXTO.zona : null;
+const colorScore = s => s>=72?'var(--morado)': s>=56?'var(--morado-2)': s>=40?'var(--alerta)':'var(--txt2)';
+
+/* Formas de acento, calcadas en espiritu a las del sitio de referencia. */
+const Asterisco = () => html`
+  <svg class="asterisco" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M50 4 L58 36 L88 20 L68 48 L98 56 L66 60 L82 90 L52 70 L44 98 L40 66 L12 82 L32 54 L2 46 L34 42 L18 12 L46 32 Z"/>
+  </svg>`;
+
+const Blob = ({numero, etiqueta}) => html`
+  <div class="blob">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 2c12 0 14 8 22 10s14-4 20 6-2 16 0 24 8 14 0 22-16 2-22 8-8 14-20 14-14-8-22-10-14 4-20-6 2-16 0-24-8-14 0-22 16-2 22-8S38 2 50 2z"/>
+    </svg>
+    <div class="blob-txt"><span class="n">${numero}</span><span class="l">${etiqueta}</span></div>
+  </div>`;
+
+function Hero({resumen, veredicto, onVerFiltros}){
+  // "En juego" y no "Vivas": el total incluye las que ya descartaste a mano
+  // con motivo escrito, y leer 3.700 como "esto es lo que tienes por delante"
+  // es leer 29 de más. Siguen listadas — quizá quieras reconsiderar alguna —
+  // pero no cuentan como puertas por tocar.
+  const stats = [
+    [resumen.en_juego ?? resumen.total ?? '—','En juego'],
+    [veredicto['aplicar-ya'] ?? 0,'Aplicar ya'],
+    [resumen.practicas ?? 0,'Prácticas'],
+    [zonaBase() ? (resumen.monterrey ?? 0) : '—', zonaBase() ? 'En ' + zonaBase().corta : 'Sin zona base'],
+    [resumen.remotas ?? 0,'Remotas'], [resumen.mudanza ?? 0,'Exigen mudarse'],
+    [resumen.nuevas ?? 0,'Nuevas'],
+    [resumen.fantasmas ?? 0,'Posibles fantasmas'],
+    [resumen.aplicadas ?? 0,'Ya aplicaste'],
+    [resumen.descartadas ?? 0,'Descartadas por ti'],
+  ];
+  return html`
+  <section class="hero">
+    <div class="navbar">
+      <div class="logo">ultra<span>chamba</span></div>
+      <button class="mas" onClick=${onVerFiltros} title="Ir a los filtros">+</button>
+    </div>
+    <div class="hero-micro">${CONTEXTO
+      ? html`${CONTEXTO.zona.etiqueta}<br/>${CONTEXTO.todas ? 'Todas las áreas' : CONTEXTO.areas.map(a => a.etiqueta).join(' · ')}`
+      : 'Cargando configuración…'}</div>
+    <div class="hero-cuerpo">
+      <div class="hero-fila">
+        <h1 class="hero-titulo">Ultra<br/>Chamba</h1>
+        <${Asterisco}/>
+        <${Blob} numero=${veredicto['aplicar-ya'] ?? 0} etiqueta="aplicar ya"/>
+      </div>
+      <div class="punto"></div>
+    </div>
+    <div class="stats">
+      ${stats.map(([n,l]) => html`
+        <div class="stat" key=${l} onClick=${onVerFiltros}>
+          <div class="n">${n}</div><div class="l">${l}</div>
+        </div>`)}
+    </div>
+  </section>`;
+}
+
+function Etiquetas({v}){
+  const ve = v.verificacion || {};
+  const enMty = !!v.en_zona;
+  const tagVerif = ve.estado==='viva'
+    ? html`<span class="tag ok" title=${ve.detalle}>✓ verificada viva</span>`
+    : ve.estado==='sin-verificar'
+      ? html`<span class="tag warn" title=${ve.detalle}>? sin confirmar</span>`
+      : html`<span class="tag mal">! ${ve.estado||'—'}</span>`;
+  return html`<div class="etiquetas">
+    ${v.veredicto==='aplicar-ya' && html`<span class="tag oro">★ aplicar ya</span>`}
+    ${v.veredicto==='zona-gris' && html`<span class="tag warn">zona gris — confirma si contratan desde México</span>`}
+    ${(v.nivel==='practicas'||v.nivel==='junior') && html`<span class="tag vio">${ETIQ.nivel[v.nivel]}</span>`}
+    <span class="tag">${ETIQ.area[v.area]||v.area}</span>
+    <span class="tag">${ETIQ.modalidad[v.modalidad]||v.modalidad}</span>
+    ${enMty && html`<span class="tag ok">${zonaBase() ? zonaBase().corta : 'tu zona'} — sin mudanza</span>`}
+    ${v.requiere_mudanza && html`<span class="tag mal">exige mudarse</span>`}
+    ${v.anios_exigidos>=3 && html`<span class="tag mal">pide ${v.anios_exigidos}+ años</span>`}
+    ${v.riesgo_fantasma>=55 && html`<span class="tag mal" title=${(v.motivos_fantasma||[]).join(' · ')}>⚠ posible vacante fantasma</span>`}
+    ${v.riesgo_fantasma>=30 && v.riesgo_fantasma<55 && html`<span class="tag warn" title=${(v.motivos_fantasma||[]).join(' · ')}>anuncio antiguo</span>`}
+    ${tagVerif}
+    <span class="tag info">${(v.fuente||'').split(':')[0]}</span>
+    ${(v.habilidades||[]).slice(0,5).map(h => html`<span class="tag info" key=${h}>${h}</span>`)}
+  </div>`;
+}
+
+function Tarjeta({v, onMarcar}){
+  const [desc, setDesc] = useState(null);
+  const abrir = async () => {
+    if (desc !== null) return;
+    setDesc('Cargando descripción…');
+    try{
+      const d = await (await fetch(`/api/vacante/${v.id}`)).json();
+      setDesc(d.descripcion ? d.descripcion.slice(0,3000)+'…'
+                            : 'Sin descripción guardada. Abre el enlace para verla.');
+    }catch(e){ setDesc('No se pudo cargar la descripción.'); }
+  };
+  return html`
+  <div class=${'tarjeta'+(v.aplicada?' aplicado':'')}>
+    <div class="cab">
+      <div style=${{flex:1, minWidth:0}}>
+        <div class="tit">${v.titulo}</div>
+        <div class="emp"><b>${v.empresa}</b> · ${v.ubicacion||'sin ubicación'}${v.salario?' · '+v.salario:''}</div>
+      </div>
+      <div class="score">
+        <div class="v" style=${{color:colorScore(v.score)}}>${v.score}</div>
+        <div class="t">fit</div>
+      </div>
+    </div>
+    <${Etiquetas} v=${v}/>
+    <div class="acc">
+      <a class="btn" href=${v.url} target="_blank" rel="noopener">Ver y postular →</a>
+      <button class="btn marc" onClick=${() => onMarcar(v.id, !v.aplicada)}>
+        ${v.aplicada ? '✓ aplicada — deshacer' : 'Marcar como aplicada'}
+      </button>
+    </div>
+    <details onToggle=${abrir}>
+      <summary>Por qué te la recomienda${(v.motivos||[]).length?` (${v.motivos.length} razones)`:''}</summary>
+      <div class="porque"><ul>${(v.motivos||[]).map((m,i) => html`<li key=${i}>${m}</li>`)}</ul></div>
+      ${(v.motivos_fantasma||[]).length>0 && html`<div class="porque" style=${{borderLeftColor:
+          v.riesgo_fantasma>=55 ? "var(--error)" : v.riesgo_fantasma>=30 ? "var(--alerta)" : "var(--borde)"}}>
+        <b>${v.riesgo_fantasma>=30
+              ? `Señales de vacante fantasma (riesgo ${v.riesgo_fantasma}/100):`
+              : 'Sobre la antigüedad del anuncio:'}</b>
+        <ul>${v.motivos_fantasma.map((m,i) => html`<li key=${i}>${m}</li>`)}</ul></div>`}
+      ${desc && html`<div class="desc">${desc}</div>`}
+    </details>
+  </div>`;
+}
+
+function Filtros({facetas, filtros, alternar, rapidos, alternarRapido, q, setQ, orden, setOrden, limpiar}){
+  const RAPIDOS = [['nuevas','✦ Nuevas desde la última corrida'],
+                   ['sin_fantasmas','Ocultar posibles fantasmas'],
+                   ...(zonaBase() ? [['monterrey','Solo ' + zonaBase().corta]] : []),['mudanza','Sin mudarme'],
+                   ['sin_experiencia','Alcanzables sin experiencia'],['ocultar_aplicadas','Ocultar aplicadas']];
+  return html`
+  <div class="barra">
+    <div class="fila">
+      <input type="search" placeholder="Buscar por puesto, empresa, tecnología, ciudad…"
+             value=${q} onInput=${e => setQ(e.target.value)}/>
+      <select value=${orden} onChange=${e => setOrden(e.target.value)}>
+        <option value="score">Ordenar: mejor fit</option>
+        <option value="fecha">Ordenar: más reciente</option>
+        <option value="empresa">Ordenar: empresa (A-Z)</option>
+      </select>
+    </div>
+    ${CAMPOS.map(campo => html`
+      <div class="fila" key=${campo}>
+        <span class="et">${campo==='verificacion'?'Verificación':campo==='veredicto'?'Prioridad':
+                           campo==='area'?'Área':campo.charAt(0).toUpperCase()+campo.slice(1)}</span>
+        ${Object.entries(facetas[campo]||{}).sort((a,b)=>b[1]-a[1]).map(([valor,n]) => html`
+          <button key=${valor} class=${'f'+(filtros[campo].includes(valor)?' on':'')}
+                  onClick=${() => alternar(campo, valor)}>
+            ${(ETIQ[campo]||{})[valor]||valor} (${n})
+          </button>`)}
+      </div>`)}
+    <div class="fila">
+      <span class="et">Rápidos</span>
+      ${RAPIDOS.map(([k,t]) => html`
+        <button key=${k} class=${'f'+(rapidos.includes(k)?' on':'')}
+                onClick=${() => alternarRapido(k)}>${t}</button>`)}
+      <span style=${{flex:1}}></span>
+      <button class="f" onClick=${limpiar}>Limpiar filtros</button>
+    </div>
+  </div>`;
+}
+
+// Formacion gratuita. Va debajo de las vacantes y no arriba a proposito: lo
+// urgente es postular; estudiar es lo importante, pero no lo urgente. Aun asi
+// se muestra siempre, porque las brechas de tu perfil no se cierran mirando
+// vacantes.
+function Curso({c}){
+  const dias = c.dias_para_cerrar;
+  const urge = dias !== null && dias !== undefined && dias >= 0 && dias <= 14;
+  const costo = {
+    'total':       ['gratis', 'ok'],
+    'examen-pago': ['examen de pago' + (c.costo_examen ? ' · ' + c.costo_examen : ''), 'warn'],
+    'beca':        ['requiere beca', 'warn'],
+  }[c.gratis] || ['coste sin confirmar', 'warn'];
+
+  return html`
+  <div class="tarjeta curso">
+    <div class="fila">
+      <div style=${{flex:1}}>
+        <div class="titulo">${c.nombre}</div>
+        <div class="sub">${c.institucion}${c.duracion ? ' · ' + c.duracion : ''}</div>
+        <div class="etiquetas">
+          ${/* `Etiquetas` recibe una VACANTE, no una lista: pasarle un array
+               hacia que leyera v.verificacion sobre undefined y React
+               desmontaba el bloque entero sin pintar una sola tarjeta. Los
+               cursos llevan sus propias etiquetas. */''}
+          <span class="tag">${c.area}</span>
+          <span class=${'tag ' + costo[1]}>${costo[0]}</span>
+          ${c.credencial && html`<span class="tag ok" title=${c.credencial}>🎓 deja credencial</span>`}
+          ${c.modalidad === 'presencial-mty' && html`<span class="tag ok">presencial en Monterrey</span>`}
+          ${urge && html`<span class="tag mal">⏳ cierra en ${dias} ${dias === 1 ? 'día' : 'días'}</span>`}
+          ${c.brecha && html`<span class="tag ok">cierra tu brecha: ${c.brecha.split(',').join(', ')}</span>`}
+        </div>
+      </div>
+      <div class="fit"><div class="n">${Math.round(c.score)}</div><div class="l">ÚTIL</div></div>
+    </div>
+    ${c.por_que && html`<div class="porque-corto">${c.por_que}</div>`}
+    <div class="acciones">
+      <a class="btn pri" href=${c.url} target="_blank" rel="noopener">Ver e inscribirse →</a>
+    </div>
+    <details>
+      <summary>Por qué te conviene (${(c.motivos||[]).length})</summary>
+      <div class="porque"><ul>
+        ${(c.motivos||[]).map((m,i) => html`<li key=${i}>${m}</li>`)}
+      </ul></div>
+    </details>
+  </div>`;
+}
+
+function Cursos(){
+  const [datos, setDatos] = useState({cursos:[], resumen:{}});
+
+  const [soloGratis, setSoloGratis] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/cursos' + (soloGratis ? '?solo_gratis=1' : ''))
+      .then(r => r.json()).then(setDatos).catch(() => {});
+  }, [soloGratis]);
+
+  if(!datos.cursos.length) return null;
+  const r = datos.resumen || {};
+
+  return html`
+  <div class="bloque-cursos">
+    <div class="seccion">
+      Formación gratuita para cerrar tus brechas
+      <span class="sub-seccion">
+        ${r.total} cursos · ${r.gratis_total} totalmente gratis · ${r.con_brecha ?? 0} cierran brechas de tu perfil
+      </span>
+    </div>
+    <div class="intro-cursos">
+      Ordenados por lo que <b>de verdad piden las vacantes de tus áreas</b>, no
+      por prestigio de la marca, y por las <b>brechas que declares en tu perfil</b>.
+      El catálogo incluido es sobre todo de <b>tecnología</b>: para otras áreas,
+      añade los tuyos. Un curso que repite lo que ya sabes baja de puesto.
+    </div>
+    <div class="fila" style=${{marginBottom:'16px'}}>
+      <button class=${'f' + (soloGratis ? ' on' : '')}
+              onClick=${() => setSoloGratis(!soloGratis)}>
+        Solo lo 100% gratis
+      </button>
+    </div>
+    ${datos.cursos.map(c => html`<${Curso} key=${c.id} c=${c}/>`)}
+  </div>`;
+}
+
+// El plan de hoy: tres candidaturas con el correo ya escrito. Es la pestaña
+// que ataca el dato que motivo el giro del sistema: 2.681 vacantes
+// recomendadas y CERO postuladas. Una lista no produce candidaturas; una cola
+// corta con el correo listo y dos botones, si.
+// Los motivos de rechazo, cerrados a proposito. Un campo de texto libre
+// produce "no me gusta" y eso no le enseña nada al filtro; estos siete se
+// corresponden con reglas que `evaluar()` ya sabe aplicar, asi que rechazar
+// una vacante afina de verdad las de mañana.
+const MOTIVOS = [
+  'no es mi carril', 'pide experiencia', 'pide título',
+  'está lejos', 'no pagan', 'jornada incompatible', 'ya cerró',
+];
+
+function TarjetaPlan({e, onHecho}){
+  const [copiado, setCopiado] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  const [enlace, setEnlace] = useState(null);
+  const [fallo, setFallo] = useState(null);
+  const [preguntando, setPreguntando] = useState(false);
+  const c = e.correo || {};
+  const esFrio = e.via === 'correo-directo';
+
+  // Deja el correo escrito en Gmail. El sistema no envía nada: crea el
+  // borrador y tú pulsas Enviar. Copiar y pegar no era "dar enviar".
+  const borrador = () => {
+    setOcupado(true); setFallo(null);
+    fetch('/api/borrador', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({id: e.candidatura_id})})
+      .then(r => r.json())
+      .then(d => {
+        if(d.enlace) setEnlace({url: d.enlace, destino: d.destino, cv: d.con_cv});
+        else setFallo(d.necesita_autorizar
+          ? 'Falta autorizar Gmail una vez. En la terminal: python app/correo_gmail.py --probar'
+          : ('No se pudo crear el borrador: ' + (d.error || 'error desconocido')));
+      })
+      .catch(err => setFallo(String(err)))
+      .finally(() => setOcupado(false));
+  };
+
+  const copiar = () => {
+    const texto = 'Asunto: ' + (c.asunto||'') + '\n\n' + (c.cuerpo || '');
+    navigator.clipboard.writeText(texto).then(() => {
+      setCopiado(true); setTimeout(() => setCopiado(false), 1800);
+    });
+  };
+
+  return html`
+  <div class=${'tarjeta plan' + (esFrio ? ' fria' : '')}>
+    <div class="fila">
+      <div style=${{flex:1}}>
+        <span class=${'tag ' + (esFrio ? 'oro' : 'ok')}>
+          ${esFrio ? '✉ ESCRIBIR EN FRÍO' : '→ POSTULAR POR EL PORTAL'}</span>
+        <div class="titulo" style=${{marginTop:'8px'}}>${e.titulo}</div>
+        <div class="sub">${e.empresa}</div>
+        ${e.contacto && html`<div class="contacto-linea">
+          Para: <b>${e.contacto.nombre}</b> — ${e.contacto.puesto}
+          <span class=${'tag ' + (e.contacto.confianza === 'verificado' ? 'ok' : 'warn')}>
+            ${e.contacto.confianza}</span>
+        </div>`}
+      </div>
+      <div class="fit"><div class="n">${Math.round(e.prioridad || 0)}</div>
+        <div class="l">PRIORIDAD</div></div>
+    </div>
+    <ul class="porque-plan">
+      ${(e.motivo_cola || []).map((m, i) => html`<li key=${i}>${m}</li>`)}
+    </ul>
+    ${c.cuerpo ? html`
+      <div class="correo-caja">
+        <div class="correo-asunto"><b>Asunto:</b> ${c.asunto}</div>
+        <textarea class="correo-texto" readOnly rows="10" value=${c.cuerpo}></textarea>
+        ${(c.avisos || []).map((a, i) => html`<div key=${i} class="aviso-correo">⚠ ${a}</div>`)}
+      </div>` : html`
+      <div class="aviso-correo">Sin correo preparado${e.error_correo ? ': ' + e.error_correo : ''}.
+        ${!e.contacto && esFrio ? ' Falta investigar el contacto de esta empresa.' : ''}</div>`}
+    <div class="acciones">
+      ${esFrio && c.cuerpo && html`<button class="btn pri" disabled=${ocupado}
+        onClick=${borrador}>
+        ${ocupado ? 'preparando…' : '✉ Dejarlo listo en mi Gmail'}</button>`}
+      ${!esFrio && e.url && html`<a class="btn pri" href=${e.url} target="_blank"
+        rel="noopener">Abrir y postular →</a>`}
+      ${esFrio && c.cuerpo && html`<button class="btn marc" onClick=${copiar}>
+        ${copiado ? '✓ copiado' : 'Copiar'}</button>`}
+      ${e.candidatura_id && html`<button class="btn env"
+        onClick=${() => onHecho(e.candidatura_id, 'enviada')}
+        title="Queda pendiente de acuse; el ciclo diario la confirma cuando la bolsa responde"
+        >✓ Ya la envié</button>`}
+      ${e.candidatura_id && html`<button class="btn desc"
+        onClick=${() => setPreguntando(true)}>Descartar</button>`}
+    </div>
+    ${preguntando && html`
+      <div class="motivo-caja">
+        <div class="motivo-titulo">¿Por qué no sirve? El sistema lo aprende y no vuelve a proponerla.</div>
+        <div class="motivo-botones">
+          ${MOTIVOS.map(m => html`<button key=${m} class="btn marc"
+            onClick=${() => { onHecho(e.candidatura_id, 'descartada', m); setPreguntando(false); }}>
+            ${m}</button>`)}
+        </div>
+      </div>`}
+    ${enlace && html`<div class=${'listo-gmail' + (enlace.destino ? '' : ' sin-destino')}>
+      ✓ Está en tus borradores de Gmail${enlace.cv ? ', con el CV adjunto' : ' (SIN CV: no se encontró el PDF)'}.
+      ${enlace.destino
+        ? html`Va a ${enlace.destino}. `
+        : html`<b>Falta el destinatario</b> — esta vía es el portal, así que el
+               borrador es tu plantilla: ponle el correo cuando lo tengas. `}
+      <a href=${enlace.url} target="_blank" rel="noopener">
+        ${enlace.destino ? 'Abrirlo y darle Enviar →' : 'Abrirlo en Gmail →'}</a>
+    </div>`}
+    ${fallo && html`<div class="aviso-correo">${fallo}</div>`}
+  </div>`;
+}
+
+// Lo que ya salio y sigue vivo. Existe porque el sistema solo contaba lo que
+// se le decia que habia salido: se pedia hacer de secretario de uno mismo.
+// Esto lo lee de Gmail y ademas recoge los hilos que se movieron a mano.
+const ROTULO = {
+  enviada:  ['esperando',                    ''],
+  acuse:    ['te contestaron',               'ok'],
+  silencio: ['sin respuesta — toca insistir', 'warn'],
+  rebote:   ['DEVUELTO — la dirección falló', 'warn'],
+};
+
+// Lo que espera un gesto tuyo HOY, y no llego por correo.
+//
+// Existe porque no todo llega por Gmail: en una sola llamada pueden entrar un
+// examen y la inscripcion a un curso, y el sistema --que solo sabia mirar
+// Gmail-- no tenia donde ponerlos. Va ARRIBA del todo
+// porque un examen con fecha no puede quedar debajo de nueve hilos ordenados
+// por dias de silencio.
+function Acciones({s}){
+  const lista = (s && s.acciones) || [];
+  if(!lista.length) return null;
+  const hoy = new Date().toISOString().slice(0,10);
+  return html`
+  <div class="seccion">Te espera
+    <span class="sub-seccion">procesos vivos que piden un gesto tuyo</span></div>
+  ${lista.map(x => {
+    const urge = x.pendiente_fecha && x.pendiente_fecha <= hoy;
+    return html`
+    <div class=${'tarjeta accion'} key=${x.id}>
+      <div class="accion-que">${urge ? '⏳ ' : ''}${x.pendiente || 'sin definir'}</div>
+      <div class="accion-cuando">
+        ${x.asunto || '(sin asunto)'}
+        ${x.pendiente_fecha && html` · ${urge ? 'para HOY' : 'para el ' + x.pendiente_fecha}`}
+      </div>
+      <div class="etiquetas">
+        ${x.canal_respuesta === 'telefono' && html`<span class="tag warn">llegó por teléfono</span>`}
+        ${x.respondida && html`<span class="tag ok">respondió ${x.respondida}</span>`}
+        ${x.enviada && html`<span class="tag">enviada ${x.enviada}</span>`}
+      </div>
+      ${x.notas && html`<div class="porque-corto">${x.notas}</div>`}
+    </div>`;
+  })}`;
+}
+
+function Seguimiento({s}){
+  if(!s) return html`<div class="seccion" style=${{marginTop:'36px'}}>Seguimiento
+    <span class="sub-seccion">mirando tu correo…</span></div>`;
+  if(s.autorizado === false) return html`<div class="seccion" style=${{marginTop:'36px'}}>Seguimiento
+    <span class="sub-seccion">falta el permiso de lectura: <code>python correo_gmail.py --ampliar</code></span></div>`;
+
+  // Las de 'pendiente-accion' ya salieron arriba, en <Acciones>: repetirlas
+  // aqui las enterraria otra vez en el orden por dias de silencio.
+  const lista = (s.pendientes || []).filter(x => x.estado !== 'pendiente-accion');
+  const insistir = (s.hay_que_insistir || []).length;
+
+  return html`
+  <div class="seccion" style=${{marginTop:'36px'}}>Seguimiento
+    <span class="sub-seccion">
+      ${lista.length} hilo${lista.length === 1 ? '' : 's'} vivo${lista.length === 1 ? '' : 's'}
+      ${insistir > 0 && html` · ${insistir} llevan 7 días o más sin respuesta`}
+    </span>
+  </div>
+  ${s.error && html`<div class="aviso-correo">No se pudo leer el correo: ${s.error}</div>`}
+  ${lista.length === 0 && !s.error && html`
+    <div class="porque-corto">Nada enviado todavía. En cuanto envíes un correo desde tu Gmail,
+    aparece aquí solo — no hace falta que marques nada.</div>`}
+  ${lista.map(x => {
+    const [texto, clase] = ROTULO[x.estado] || [x.estado, ''];
+    const dias = x.dias_silencio;
+    return html`
+    <div class="tarjeta" key=${x.id}>
+      <div class="fila">
+        <div style=${{flex:1}}>
+          <div class="titulo">${x.asunto || '(sin asunto)'}</div>
+          <div class="etiquetas">
+            <span class=${'tag ' + clase}>${texto}</span>
+            ${x.enviada && html`<span class="tag">enviada ${x.enviada}</span>`}
+            ${x.respondida && html`<span class="tag ok">respondió ${x.respondida}</span>`}
+          </div>
+          ${x.notas && html`<div class="porque-corto">${x.notas}</div>`}
+        </div>
+        <div class="fit">
+          <div class="n">${dias === null || dias === undefined ? '—' : dias}</div>
+          <div class="l">${dias === null || dias === undefined ? 'CONTESTADO' : 'DÍAS'}</div>
+        </div>
+      </div>
+    </div>`;
+  })}`;
+}
+
+// Que canal contesta. Se enseña porque la cola se reparte con esto: si hoy
+// hay dos correos y un portal, es porque el correo contesta cinco veces mas,
+// no porque alguien lo decidiera a ojo.
+function Rendimiento({r, reparto}){
+  if(!r || !Object.keys(r).length) return null;
+  const nombre = {correo: '✉ escribir a una persona', portal: '→ formulario de portal'};
+  return html`
+  <div class="rendimiento">
+    ${Object.entries(r).map(([canal, d]) => html`
+      <div class="rend-canal" key=${canal}>
+        <div class="rend-tasa">${d.tasa === null ? '—' : d.tasa + '%'}</div>
+        <div class="rend-nombre">${nombre[canal] || canal}</div>
+        <div class="rend-detalle">
+          ${d.respuestas} de ${d.enviadas} contestaron
+          ${!d.fiable && html` · <span title="Con menos de 10 casos esto es una anécdota, no una tendencia">pocos datos</span>`}
+        </div>
+      </div>`)}
+    ${reparto && html`<div class="rend-razon">
+      Hoy: ${reparto.correo} por correo, ${reparto.portal} por portal — ${reparto.razon}
+    </div>`}
+  </div>`;
+}
+
+function Plan(){
+  const [datos, setDatos] = useState(null);
+  const [empresas, setEmpresas] = useState([]);
+  const [seg, setSeg] = useState(null);
+  const [error, setError] = useState(null);
+
+  const cargar = () => {
+    fetch('/api/cola').then(r => r.json()).then(setDatos)
+      .catch(e => setError(String(e)));
+    fetch('/api/empresas?limite=15').then(r => r.json())
+      .then(d => setEmpresas(d.empresas || [])).catch(() => {});
+    // El seguimiento va aparte y sin bloquear: mira Gmail, tarda mas que la
+    // base, y si el correo falla el plan del dia tiene que salir igual.
+    fetch('/api/seguimiento').then(r => r.json()).then(setSeg).catch(() => {});
+  };
+  useEffect(cargar, []);
+
+  const marcar = (id, estado, motivo) => {
+    fetch('/api/candidatura', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({id, estado, motivo})}).then(cargar);
+  };
+
+  if(error) return html`<div class="error">No se pudo cargar el plan: ${error}</div>`;
+  if(!datos) return html`<div class="cargando">Preparando tu plan de hoy…</div>`;
+  const s = datos.situacion || {};
+
+  return html`
+  <div class="bloque-plan">
+    <div class="marcador">
+      <div class="marcador-num">
+        <span class="n">${s.enviadas ?? 0}</span> candidaturas enviadas
+        · <span class="n">${s.con_respuesta ?? 0}</span> con respuesta
+      </div>
+      <div class="marcador-sub">
+        La cifra que importa no es cuántas vacantes hay: es cuántas puertas tocaste.
+        Tres al día bastan — el sistema elige cuáles y escribe el correo; tú revisas y envías.
+      </div>
+      <${Rendimiento} r=${datos.rendimiento} reparto=${datos.reparto}/>
+    </div>
+    <${Acciones} s=${seg}/>
+
+    ${(datos.cola || []).map((e, i) => html`<${TarjetaPlan} key=${i} e=${e} onHecho=${marcar}/>`)}
+
+    <${Seguimiento} s=${seg}/>
+
+    <div class="seccion" style=${{marginTop:'36px'}}>Empresas objetivo${zonaBase() ? ' en ' + zonaBase().corta : ''}
+      <span class="sub-seccion">a quién apuntar, con o sin vacante publicada</span></div>
+    ${empresas.map(e => html`
+      <div class="tarjeta empresa-mini" key=${e.id}>
+        <div class="fila">
+          <div style=${{flex:1}}>
+            <div class="titulo">${e.nombre_limpio}</div>
+            <div class="etiquetas">
+              <span class=${'tag ' + (e.via === 'espontanea' ? 'oro' : e.via === 'programa-formal' ? 'ok' : '')}>
+                ${e.via === 'espontanea' ? '✉ escribir en frío'
+                  : e.via === 'programa-formal' ? 'portal de becarios' : 'postular'}</span>
+              ${e.vacantes_ciber > 0 && html`<span class="tag">${e.vacantes_ciber} de tus áreas</span>`}
+              ${e.vacantes_prac > 0 && html`<span class="tag ok">${e.vacantes_prac} prácticas</span>`}
+            </div>
+            ${(e.contactos || []).map((ct, i) => html`
+              <div class="contacto-linea" key=${i}>
+                <b>${ct.nombre}</b> — ${ct.puesto}
+                ${ct.correo && html` · <code>${ct.correo}</code>`}
+                <span class=${'tag ' + (ct.confianza === 'verificado' ? 'ok' : 'warn')}>${ct.confianza}</span>
+              </div>`)}
+            ${e.notas && html`<div class="porque-corto">${e.notas}</div>`}
+          </div>
+          <div class="fit"><div class="n">${Math.round(e.score)}</div><div class="l">OBJETIVO</div></div>
+        </div>
+      </div>`)}
+  </div>`;
+}
+
+function App(){
+  const [facetas, setFacetas] = useState({resumen:{}, veredicto:{}});
+  const [datos, setDatos] = useState({vacantes:[], total:0, mostradas:0});
+  const [filtros, setFiltros] = useState(Object.fromEntries(CAMPOS.map(c=>[c,[]])));
+  const [rapidos, setRapidos] = useState([]);
+  const [q, setQ] = useState('');
+  const [orden, setOrden] = useState('score');
+  const [error, setError] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  // Vacantes y formacion son dos trabajos distintos: postular es urgente,
+  // estudiar es importante. Mezclarlos en una sola lista enterraba los
+  // cursos debajo de 2.600 vacantes, donde no los veia nadie.
+  const [vista, setVista] = useState('vacantes');
+  const refFiltros = useRef(null);
+
+  const cargarFacetas = useCallback(async () => {
+    const f = await (await fetch('/api/facetas')).json();
+    // La configuracion activa se fija ANTES de pintar: el hero, las etiquetas
+    // de zona y los filtros rapidos la leen al renderizar.
+    if (f.contexto) {
+      CONTEXTO = f.contexto;
+      Object.assign(ETIQ.area, f.contexto.etiquetas_area || {});
+    }
+    setFacetas(f);
+  }, []);
+
+  const cargar = useCallback(async () => {
+    setCargando(true);
+    try{
+      const p = new URLSearchParams();
+      for (const c of CAMPOS) if (filtros[c].length) p.set(c, filtros[c].join(','));
+      for (const r of rapidos) p.set(r, r==='mudanza' ? '0' : '1');
+      if (q.trim()) p.set('q', q.trim());
+      p.set('orden', orden); p.set('limite','300');
+      const r = await (await fetch('/api/vacantes?'+p)).json();
+      setDatos(r); setError(null);
+    }catch(e){ setError(String(e)); }
+    setCargando(false);
+  }, [filtros, rapidos, q, orden]);
+
+  useEffect(() => { cargarFacetas().catch(e => setError(String(e))); }, [cargarFacetas]);
+  useEffect(() => { const t = setTimeout(cargar, q ? 300 : 0); return () => clearTimeout(t); }, [cargar, q]);
+
+  const alternar = (campo, valor) => setFiltros(f => ({...f,
+    [campo]: f[campo].includes(valor) ? f[campo].filter(x=>x!==valor) : [...f[campo], valor]}));
+  const alternarRapido = k => setRapidos(r => r.includes(k) ? r.filter(x=>x!==k) : [...r, k]);
+  const limpiar = () => { setFiltros(Object.fromEntries(CAMPOS.map(c=>[c,[]]))); setRapidos([]); setQ(''); };
+
+  const marcar = async (id, aplicada) => {
+    await fetch('/api/aplicar', {method:'POST', headers:{'Content-Type':'application/json'},
+                                 body: JSON.stringify({id, aplicada})});
+    await cargarFacetas(); await cargar();
+  };
+
+  // Solo la cifra: la pestaña necesita saber cuantos hay antes de abrirse.
+  const [totalCursos, setTotalCursos] = useState(0);
+  useEffect(() => { fetch('/api/cursos').then(r=>r.json())
+    .then(d => setTotalCursos((d.resumen||{}).total || 0)).catch(()=>{}); }, []);
+
+  // Lo mismo para el plan. Antes este numero estaba escrito a mano ("3") y
+  // decia 3 aunque la cola trajera 1 o 0.
+  const [totalPlan, setTotalPlan] = useState(null);
+  useEffect(() => { fetch('/api/cola').then(r=>r.json())
+    .then(d => setTotalPlan((d.cola||[]).length)).catch(()=>{}); }, []);
+
+  const irAFiltros = () => refFiltros.current?.scrollIntoView({behavior:'smooth', block:'start'});
+
+  return html`
+  <${React.Fragment}>
+    <div class="pestana" onClick=${irAFiltros}>${facetas.resumen?.en_juego ?? facetas.resumen?.total ?? '—'} en juego</div>
+    <${Hero} resumen=${{...facetas.resumen,
+                        practicas:(facetas.nivel||{}).practicas,
+                        remotas:(facetas.modalidad||{}).remoto}}
+             veredicto=${facetas.veredicto||{}} onVerFiltros=${irAFiltros}/>
+    <div class="contenido"><div class="wrap">
+      ${error && html`
+        <div class="error"><b>No se pudo conectar con la base de datos.</b><br/><br/>
+          Este panel necesita el servidor encendido:<br/><br/>
+          <code>python app/servidor.py</code><br/><br/>
+          y luego entra en <code>http://127.0.0.1:8800</code><br/>
+          <span style=${{color:'var(--txt2)'}}>Detalle: ${error}</span>
+        </div>`}
+      <div class="pestanas">
+        <button class=${'pest' + (vista === 'vacantes' ? ' on' : '')}
+                onClick=${() => setVista('vacantes')}>
+          Vacantes <span class="cuenta">${facetas.resumen?.total ?? '—'}</span>
+        </button>
+        <button class=${'pest' + (vista === 'formacion' ? ' on' : '')}
+                onClick=${() => setVista('formacion')}>
+          Formación gratuita <span class="cuenta">${totalCursos || '—'}</span>
+        </button>
+        <button class=${'pest' + (vista === 'plan' ? ' on' : '')}
+                onClick=${() => setVista('plan')}>
+          ★ Plan de hoy <span class="cuenta">${totalPlan ?? '—'}</span>
+        </button>
+      </div>
+
+      ${vista === 'plan'
+        ? html`<${Plan}/>`
+        : vista === 'formacion'
+        ? html`<${Cursos}/>`
+        : html`<${React.Fragment}>
+      <div ref=${refFiltros} class="sticky">
+        <div class="seccion">Filtros</div>
+        <${Filtros} facetas=${facetas} filtros=${filtros} alternar=${alternar}
+                    rapidos=${rapidos} alternarRapido=${alternarRapido}
+                    q=${q} setQ=${setQ} orden=${orden} setOrden=${setOrden} limpiar=${limpiar}/>
+      </div>
+      <div class="conteo">
+        Mostrando <b>${datos.mostradas}</b> de <b>${datos.total}</b> vacantes que cumplen los filtros
+      </div>
+      ${cargando && !datos.vacantes.length
+        ? html`<div class="cargando">Cargando…</div>`
+        : datos.vacantes.length
+          ? datos.vacantes.map(v => html`<${Tarjeta} key=${v.id} v=${v} onMarcar=${marcar}/>`)
+          : html`<div class="vacio"><b>Sin resultados</b>Ningún resultado con esos filtros. Prueba quitando alguno.</div>`}
+      <//>`}
+    </div></div>
+    <footer><div class="wrap">
+      Los datos salen de <code>app/datos/ultrachamba.db</code> · esta interfaz no los lleva dentro<br/>
+      Marcar una vacante como aplicada se guarda en la base de datos, no en este navegador.
+    </div></footer>
+  <//>`;
+}
+
+ReactDOM.createRoot(document.getElementById('raiz')).render(html`<${App}/>`);
+</script>
+</body></html>
